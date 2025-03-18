@@ -94,7 +94,7 @@ userSchema.methods.createVerificationToken = function () {
         .createHash('sha256')
         .update(verifyToken)
         .digest('hex');
-    this.verificationTokenExpires = Date.now + 24 * 60 * 60 * 1000;
+    this.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
     return verifyToken;
 };
 

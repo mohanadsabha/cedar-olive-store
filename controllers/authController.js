@@ -42,7 +42,7 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
 
     // Send verification Email..
     const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${verifyToken}`;
-    const message = `<a href=${verifyURL}>Click here to verify your email</a><br><p>Available for 24 hours only<p>`;
+    const message = `<a href="${verifyURL}">Click here to verify your email</a><br><p>Available for 24 hours only<p>`;
     try {
         await sendEmail({
             email: user.email,
@@ -97,7 +97,7 @@ exports.verifyAccount = catchAsync(async (req, res, next) => {
     user.isVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
-    await user.save();
+    await user.save({ validateBeforeSave: false });
     res.status(200).json({
         status: 'success',
         data: {
