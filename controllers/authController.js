@@ -41,7 +41,8 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     const verifyToken = user.createVerificationToken();
     await user.save({ validateBeforeSave: false });
     // Send verification Email..
-    const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${verifyToken}`;
+    // const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${verifyToken}`;
+    const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
     const message = `<a href="${verifyURL}">Click here to verify your email</a><br><p>Available for 24 hours only<p>`;
     try {
         await sendEmail({
@@ -144,7 +145,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
     // send token in email
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    // const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    const resetURL = `http://localhost:3000/resetPassword/${resetToken}`;
     const message = `Forgot your password? Submit a request with your new password to: <a href="${resetURL}">${resetURL}</a>.\nIf you didn't forget your password, please ignore this email`;
     try {
         await sendEmail({
