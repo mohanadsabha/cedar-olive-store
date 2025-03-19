@@ -236,3 +236,20 @@ exports.restrictTo =
         }
         next();
     };
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+    const user = await User.findById(req.user.id).select('+password');
+    // Check for the current password
+    if (
+        !(await user.comparePassword(req.body.currentPassword, user.password))
+    ) {
+        return next(new AppError('Your current password is wrong', 401));
+    }
+    // Update Password
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+
+    // Kepp user loged in, Send JWT
+    createSendToken(user, 200, res);
+});

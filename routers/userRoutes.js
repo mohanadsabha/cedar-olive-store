@@ -14,10 +14,10 @@ router.patch('/resetPassword/:token', authContoller.resetPassword);
 // The below routes will be protected
 router.use(authContoller.protect);
 
-// router.get('/me', userController.getMe, userController.getUser);
-// router.patch('/updateMyPassword', authContoller.updatePassword);
-// router.patch('/updateMe', userController.updateMe);
-// router.delete('/deleteMe', userController.deleteMe);
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
+router.patch('/updateMyPassword', authContoller.updatePassword);
+router.delete('/deleteMe', userController.deleteMe);
 
 // Admin Only
 router.use(authContoller.restrictTo('admin'));
