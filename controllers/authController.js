@@ -71,7 +71,7 @@ exports.signup = catchAsync(async (req, res, next) => {
         address: req.body.address,
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
-        role: req.body.role,
+        // You can set an admin using the database not from here
     });
     sendVerificationEmail(newUser, req, res, next);
 });
