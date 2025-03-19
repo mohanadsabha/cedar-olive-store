@@ -1,6 +1,6 @@
 const express = require('express');
 const authContoller = require('../controllers/authController');
-// const userContoller = require('../controllers/userController');
+const userController = require('../controllers/userController');
 
 const router = express.Router();
 
@@ -14,19 +14,22 @@ router.patch('/resetPassword/:token', authContoller.resetPassword);
 // The below routes will be protected
 router.use(authContoller.protect);
 
-// router.get('/me', userContoller.getMe, userContoller.getUser);
+// router.get('/me', userController.getMe, userController.getUser);
 // router.patch('/updateMyPassword', authContoller.updatePassword);
-// router.patch('/updateMe', userContoller.updateMe);
-// router.delete('/deleteMe', userContoller.deleteMe);
+// router.patch('/updateMe', userController.updateMe);
+// router.delete('/deleteMe', userController.deleteMe);
 
 // Admin Only
 router.use(authContoller.restrictTo('admin'));
 
-// router.route('/').get(userContoller.getAllUsers).post(userContoller.createUser);
-// router
-//     .route('/:id')
-//     .get(userContoller.getUser)
-//     .patch(userContoller.updateUser)
-//     .delete(userContoller.deleteUser);
+router
+    .route('/')
+    .get(userController.getAllUsers)
+    .post(userController.createUser);
+router
+    .route('/:id')
+    .get(userController.getUser)
+    .patch(userController.updateUser)
+    .delete(userController.deleteUser);
 
 module.exports = router;
