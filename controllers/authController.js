@@ -239,6 +239,9 @@ exports.restrictTo =
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = await User.findById(req.user.id).select('+password');
+    if (!req.body.currentPassword) {
+        return next(new AppError('Please provide your current password', 400));
+    }
     // Check for the current password
     if (
         !(await user.comparePassword(req.body.currentPassword, user.password))
