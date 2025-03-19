@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { promisify } = require('util');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -39,7 +40,6 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     // Generate random token
     const verifyToken = user.createVerificationToken();
     await user.save({ validateBeforeSave: false });
-
     // Send verification Email..
     const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${verifyToken}`;
     const message = `<a href="${verifyURL}">Click here to verify your email</a><br><p>Available for 24 hours only<p>`;
@@ -51,13 +51,7 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
         });
         res.status(200).json({
             status: 'success',
-            data: {
-                user: {
-                    id: user._id,
-                    name: user.name,
-                    email: user.email,
-                },
-            },
+            message: 'Verification email sent',
         });
     } catch (err) {
         return next(
@@ -82,7 +76,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     sendVerificationEmail(newUser, req, res, next);
 });
 
-exports.verifyAccount = catchAsync(async (req, res, next) => {
+exports.verify = catchAsync(async (req, res, next) => {
     const hashedToken = crypto
         .createHash('sha256')
         .update(req.params.token)
@@ -117,7 +111,10 @@ exports.resendVerify = catchAsync(async (req, res, next) => {
         return next(new AppError('Invalid email', 401));
     }
     if (user.isVerified) {
-        res.status().json({});
+        res.status(200).json({
+            status: 'success',
+            message: 'User is already verified',
+        });
     }
     sendVerificationEmail(user, req, res, next);
 });
@@ -127,7 +124,7 @@ exports.login = catchAsync(async (req, res, next) => {
     if (!email || !password) {
         return next(new AppError('Please provide email and password!', 400));
     }
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password +isVerified');
     if (
         !user ||
         !user.isVerified ||
@@ -137,3 +134,105 @@ exports.login = catchAsync(async (req, res, next) => {
     }
     createSendToken(user, 200, res);
 });
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+        return next(new AppError('There is no user with email address', 404));
+    }
+    // Generate random token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+    // send token in email
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    const message = `Forgot your password? Submit a request with your new password to: ${resetURL} .\nIf you didn't forget your password, please ignore this email`;
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: 'Your Password Reset Token (Valid for 10 mins)',
+            message,
+        });
+        res.status(200).json({
+            status: 'success',
+            message: 'Token sent to email',
+        });
+    } catch (err) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+
+        return next(
+            new AppError(
+                'There was an error sending the email, try again later!',
+                500,
+            ),
+        );
+    }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+    // Get user based on token
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(req.params.token)
+        .digest('hex');
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() },
+    });
+    // Set new password, if token in not expired, user exists
+    if (!user) {
+        return next(new AppError('Token is invalid or has expired', 400));
+    }
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    // log the user in, send jwt
+    createSendToken(user, 200, res);
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+    // Get the token
+    const fullToken = req.headers.authorization;
+    let token;
+    if (fullToken && fullToken.startsWith('Bearer')) {
+        token = fullToken.split(' ')[1];
+    }
+    if (!token) {
+        return next(new AppError('You are not logged in, please log in', 401));
+    }
+    // Verify the token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    // Check user still exits and didn't change their password after the token sent
+    const freshUser = await User.findById(decoded.id);
+    if (!freshUser) {
+        return next(new AppError('The user does not longer exists', 401));
+    }
+    if (freshUser.changedPasswordAfter(decoded.iat)) {
+        return next(
+            new AppError(
+                'Password has been recently changed! Please log in again',
+                401,
+            ),
+        );
+    }
+    // Give access
+    req.user = freshUser;
+    next();
+});
+
+exports.restrictTo =
+    (...roles) =>
+    (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return next(
+                new AppError(
+                    'You do not have permission to perform this action',
+                    403,
+                ),
+            );
+        }
+        next();
+    };
