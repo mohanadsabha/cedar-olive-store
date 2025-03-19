@@ -11,6 +11,8 @@ const userRouter = require('./routers/userRoutes');
 
 const app = express();
 
+app.set('trust proxy', 1); // Trust the first proxy fro vercel
+
 const limiter = rateLimit({
     max: 100,
     windowMs: 60 * 60 * 1000,
