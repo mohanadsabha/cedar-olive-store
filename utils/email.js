@@ -17,6 +17,7 @@ const sendEmail = async (options) => {
         to: options.email,
         subject: options.subject,
         html: options.message,
+        text: options.text || options.message.replace(/<[^>]*>/g, ''), // Fallback for text-only email clients
     };
 
     // Send Email

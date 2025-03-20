@@ -43,11 +43,18 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     // Send verification Email..
     // const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${verifyToken}`;
     const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
-    const message = `<a href="${verifyURL}">Click here to verify your email</a><br><p>Available for 24 hours only<p>`;
+    const message = `
+    <p>Hello ${user.name},</p>
+    <p>Thank you for registering at Sedar Olive Store! To complete your sign-up, please verify your email by clicking the link below:</p>
+    <p><a href="${verifyURL}" style="background-color:#4CAF50;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Verify Email</a></p>
+    <p>This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
+    <p>Best regards,<br>Sedar Olive Store Team</p>
+    <hr>
+    <p><small>If you have questions, contact us at <a href="mailto:support@sedarolive.com">support@sedarolive.com</a></small></p>`;
     try {
         await sendEmail({
             email: user.email,
-            subject: 'Your Email Verification Link',
+            subject: 'Verify Your Email - Sedar Olive Store',
             message,
         });
         res.status(200).json({
@@ -147,11 +154,18 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     // send token in email
     // const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
     const resetURL = `http://localhost:3000/resetPassword/${resetToken}`;
-    const message = `Forgot your password? Submit a request with your new password to: <a href="${resetURL}">${resetURL}</a>.\nIf you didn't forget your password, please ignore this email`;
+    const message = `
+    <p>Hello ${user.name},</p>
+    <p>You requested a password reset. Click the link below to reset your password:</p>
+    <p><a href="${resetURL}" style="background-color:#2196F3;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Reset Password</a></p>
+    <p>This link will expire in 10 minutes. If you did not request a password reset, please ignore this email or contact our support team.</p>
+    <p>Best regards,<br>Sedar Olive Store Team</p>
+    <hr>
+    <p><small>For assistance, email us at <a href="mailto:support@sedarolive.com">support@sedarolive.com</a></small></p>`;
     try {
         await sendEmail({
             email: user.email,
-            subject: 'Your Password Reset Token (Valid for 10 mins)',
+            subject: 'Password Reset Request - Sedar Olive Store',
             message,
         });
         res.status(200).json({
