@@ -16,7 +16,7 @@ const sendEmail = async (options) => {
         from:
             options.from ||
             `"Sedar Olive Store" <${process.env.EMAIL_FROM || 'noreply@sedarolive.com'}>`,
-        to: options.email,
+        to: options.to,
         subject: options.subject,
         html: options.message,
         text: options.text || options.message.replace(/<[^>]*>/g, ''), // Fallback for text-only email clients

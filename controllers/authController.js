@@ -53,7 +53,7 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     <p><small>If you have questions, contact us at <a href="mailto:support@sedarolive.com">support@sedarolive.com</a></small></p>`;
     try {
         await sendEmail({
-            email: user.email,
+            to: user.email,
             subject: 'Verify Your Email - Sedar Olive Store',
             message,
         });
@@ -159,7 +159,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     <p><small>For assistance, email us at <a href="mailto:support@sedarolive.com">support@sedarolive.com</a></small></p>`;
     try {
         await sendEmail({
-            email: user.email,
+            to: user.email,
             subject: 'Password Reset Request - Sedar Olive Store',
             message,
         });

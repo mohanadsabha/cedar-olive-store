@@ -80,16 +80,14 @@ exports.submitContactForm = catchAsync(async (req, res, next) => {
 
     await sendEmail({
         from: `"${name}" <${email}>`,
-        email: process.env.ADMIN_EMAIL,
+        to: process.env.ADMIN_EMAIL,
         subject: `New Contact Form Submission from ${name}`,
         message: htmlTemplate,
         text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`, // text alternative
     });
 
     res.status(201).json({
-        success: true,
+        status: 'success',
         message: 'Message sent successfully!',
     });
 });
-
-// FIX: Change email to 'to' everywhere

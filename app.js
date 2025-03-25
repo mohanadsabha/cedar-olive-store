@@ -5,10 +5,11 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const hpp = require('hpp');
+// const hpp = require('hpp');
 const AppError = require('./utils/appError');
 const globalEerrorHandler = require('./controllers/errorController');
 const userRouter = require('./routers/userRoutes');
+const contactRouter = require('./routers/contactRoutes');
 
 const app = express();
 
@@ -48,21 +49,10 @@ app.use(mongoSanitize());
 app.use(xss());
 
 // prevent parameter pollution
-// app.use(
-//     hpp({
-//         whitelist: [
-//             // Change White List later !!
-//             'duration',
-//             'ratingsAverage',
-//             'ratingsQuantity',
-//             'maxGroupSize',
-//             'price',
-//         ],
-//     }),
-// );
 
 // Routes
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/contact', contactRouter);
 
 // Unhandled routes
 app.all('*', (req, res, next) => {
