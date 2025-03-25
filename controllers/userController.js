@@ -16,7 +16,7 @@ const filterObj = (obj, ...allowedFields) => {
 // Users
 exports.uploadUserImage = upload.single('photo');
 
-exports.resizeUserImage = async (req, res, next) => {
+exports.resizeUserImage = (req, res, next) => {
     if (!req.file) return next();
     const uploadStream = cloudinary.uploader.upload_stream(
         {
