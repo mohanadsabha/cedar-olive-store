@@ -1,0 +1,17 @@
+extends baseEmail
+
+block content
+  p= `Hi ${name.split(' ')[0]},`
+  p Thank you for registering at Sedar Olive Store 🎉🙏
+  p To complete your sign-up, please verify your email by clicking the link below:
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${url}`, target='_blank') Verify your email
+  p This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+  
