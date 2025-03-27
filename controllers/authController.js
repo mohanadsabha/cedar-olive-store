@@ -4,7 +4,7 @@ const { promisify } = require('util');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 const signToken = (id) =>
     jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -40,23 +40,10 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     // Generate random token
     const verifyToken = user.createVerificationToken();
     await user.save({ validateBeforeSave: false });
-    // Send verification Email..
-    // const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${verifyToken}`;
-    const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
-    const message = `
-    <p>Hello ${user.name},</p>
-    <p>Thank you for registering at Sedar Olive Store! To complete your sign-up, please verify your email by clicking the link below:</p>
-    <p><a href="${verifyURL}" style="background-color:#4CAF50;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Verify Email</a></p>
-    <p>This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
-    <p>Best regards,<br>Sedar Olive Store Team</p>
-    <hr>
-    <p><small>If you have questions, contact us at <a href="mailto:support@sedarolive.com">support@sedarolive.com</a></small></p>`;
+    // Send verification Email
     try {
-        await sendEmail({
-            to: user.email,
-            subject: 'Verify Your Email - Sedar Olive Store',
-            message,
-        });
+        const verifyURL = `${req.protocol}://${req.get('host')}/verify/${verifyToken}`;
+        await new Email(user, verifyURL).sendVerification();
         res.status(200).json({
             status: 'success',
             message: 'Verification email sent',
@@ -147,22 +134,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
     // send token in email
-    // const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-    const resetURL = `http://localhost:3000/resetPassword/${resetToken}`;
-    const message = `
-    <p>Hello ${user.name},</p>
-    <p>You requested a password reset. Click the link below to reset your password:</p>
-    <p><a href="${resetURL}" style="background-color:#2196F3;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">Reset Password</a></p>
-    <p>This link will expire in 10 minutes. If you did not request a password reset, please ignore this email or contact our support team.</p>
-    <p>Best regards,<br>Sedar Olive Store Team</p>
-    <hr>
-    <p><small>For assistance, email us at <a href="mailto:support@sedarolive.com">support@sedarolive.com</a></small></p>`;
     try {
-        await sendEmail({
-            to: user.email,
-            subject: 'Password Reset Request - Sedar Olive Store',
-            message,
-        });
+        const resetURL = `${req.protocol}://${req.get('host')}/resetPassword/${resetToken}`;
+        await new Email(user, resetURL).sendPasswordReset();
         res.status(200).json({
             status: 'success',
             message: 'Token sent to email',
@@ -171,7 +145,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
         user.passwordResetToken = undefined;
         user.passwordResetExpires = undefined;
         await user.save({ validateBeforeSave: false });
-
         return next(
             new AppError(
                 'There was an error sending the email, try again later!',
