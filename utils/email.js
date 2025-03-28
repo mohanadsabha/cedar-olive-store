@@ -11,16 +11,6 @@ module.exports = class Email {
     }
 
     createTransporter() {
-        if (process.env.NODE_ENV === 'production') {
-            // Sendgrid
-            return nodemailer.createTransport({
-                service: 'SendGrid',
-                auth: {
-                    user: process.env.SENDGRID_USERNAME,
-                    pass: process.env.SENDGRID_PASSWORD,
-                },
-            });
-        }
         return nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
             port: process.env.EMAIL_PORT,
@@ -36,7 +26,7 @@ module.exports = class Email {
             `${__dirname}/../templates/${template}.pug`,
             {
                 name: this.name,
-                email: this.to, // For contact forms only
+                email: this.contactEmail, // For contact forms only
                 url: this.url,
                 subject,
             },
@@ -46,7 +36,7 @@ module.exports = class Email {
             to: this.to,
             subject,
             html,
-            text: htmlToText.fromString(html),
+            text: htmlToText.convert(html),
         };
         await this.createTransporter().sendMail(mailOptions);
     }
@@ -66,7 +56,8 @@ module.exports = class Email {
     }
 
     async sendContact() {
-        this.from = `"${this.name}" <${this.to}>`;
+        this.contactEmail = this.to;
+        this.from = `"${this.name}" <${this.contactEmail}>`;
         this.to = process.env.ADMIN_EMAIL;
         await this.send(
             'contact',
