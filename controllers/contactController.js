@@ -1,6 +1,7 @@
 const Contact = require('../models/contactModel');
 const catchAsync = require('../utils/catchAsync');
 const Email = require('../utils/email');
+const factory = require('./handlerFactory');
 
 exports.submitContactForm = catchAsync(async (req, res, next) => {
     const { name, email, message } = req.body;
@@ -13,3 +14,8 @@ exports.submitContactForm = catchAsync(async (req, res, next) => {
         message: 'Message sent successfully!',
     });
 });
+
+exports.getAllContacts = factory.getAll(Contact);
+exports.getContact = factory.getOne(Contact);
+exports.updateContact = factory.updateOne(Contact);
+exports.deleteContact = factory.deleteOne(Contact);
