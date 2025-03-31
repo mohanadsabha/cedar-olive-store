@@ -42,7 +42,8 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     await user.save({ validateBeforeSave: false });
     // Send verification Email
     try {
-        const verifyURL = `${req.protocol}://${req.get('host')}/verify/${verifyToken}`;
+        // const verifyURL = `${req.protocol}://${req.get('host')}/verify/${verifyToken}`;
+        const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
         await new Email(user, verifyURL).sendVerification();
         res.status(200).json({
             status: 'success',
@@ -135,7 +136,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
     // send token in email
     try {
-        const resetURL = `${req.protocol}://${req.get('host')}/resetPassword/${resetToken}`;
+        // const resetURL = `${req.protocol}://${req.get('host')}/resetPassword/${resetToken}`;
+        const resetURL = `http://localhost:3000/resetPassword/${resetToken}`;
         await new Email(user, resetURL).sendPasswordReset();
         res.status(200).json({
             status: 'success',
