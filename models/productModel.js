@@ -29,17 +29,6 @@ const productSchema = new mongoose.Schema(
             type: Number,
             required: [true, 'Product must have a price'],
         },
-        priceDiscount: {
-            type: Number,
-            validate: {
-                validator: function (val) {
-                    // this only points to current doc on NEW document creation, Does Not work with update
-                    return val < this.price;
-                },
-                message:
-                    'Discount price ({VALUE}) should be below regular price',
-            },
-        },
         ratingsAverage: {
             type: Number,
             default: 4.5,
