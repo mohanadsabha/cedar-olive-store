@@ -48,6 +48,7 @@ const productSchema = new mongoose.Schema(
 );
 
 // I will do indexing later if neccessery ..
+productSchema.index({ category: 1, brand: 1 });
 
 // Virtual populate for reviews on single product later ..
 
