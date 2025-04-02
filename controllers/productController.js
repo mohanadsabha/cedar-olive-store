@@ -3,31 +3,36 @@ const factory = require('./handlerFactory');
 const upload = require('../utils/multer');
 const cloudinary = require('../utils/cloudinary');
 const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
-exports.uploadProductImages = upload.array('images', 10);
+exports.uploadProductImages = upload.array('images', 6);
 
-exports.resizeProductImages = (req, res, next) => {
-    if (!req.files) return next();
-    req.body.images = [];
-    req.files.map((file, i) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-            {
-                folder: 'products',
-                public_id: `product-${req.params.id}-${Date.now()}-${i + 1}`,
-                format: 'jpeg',
-                transformation: [{ quality: 90 }],
-            },
-            (error, result) => {
-                if (error)
-                    return next(new AppError('Image upload failed', 500));
-                // Store the Cloudinary URL
-                req.body.images.push(result.secure_url);
-            },
-        );
-        uploadStream.end(file.buffer);
-    });
+exports.resizeProductImages = catchAsync(async (req, res, next) => {
+    if (!req.files || req.files.length === 0) return next();
+    const uploadPromises = req.files.map(
+        (file, i) =>
+            new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'products',
+                        public_id: `product-${req.params.id}-${Date.now()}-${i + 1}`,
+                        format: 'jpeg',
+                        transformation: [{ quality: 90 }],
+                    },
+                    (error, result) => {
+                        if (error)
+                            return reject(
+                                new AppError('Image upload failed', 500),
+                            );
+                        resolve(result.secure_url);
+                    },
+                );
+                uploadStream.end(file.buffer);
+            }),
+    );
+    req.body.images = await Promise.all(uploadPromises);
     next();
-};
+});
 
 exports.getAllProducts = factory.getAll(Product);
 exports.getProduct = factory.getOne(Product);

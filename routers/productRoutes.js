@@ -10,7 +10,12 @@ router.get('/:id', productController.getProduct);
 router.use(authController.protect, authController.restrictTo('admin'));
 
 // Admin permissions only
-router.post('/', productController.addProduct);
+router.post(
+    '/',
+    productController.uploadProductImages,
+    productController.resizeProductImages,
+    productController.addProduct,
+);
 router
     .route('/:id')
     .patch(
