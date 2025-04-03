@@ -47,10 +47,13 @@ const productSchema = new mongoose.Schema(
     },
 );
 
-// I will do indexing later if neccessery ..
 productSchema.index({ category: 1, brand: 1 });
 
-// Virtual populate for reviews on single product later ..
+productSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'product',
+    localField: '_id',
+});
 
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;
