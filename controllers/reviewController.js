@@ -17,10 +17,13 @@ exports.checkReviewOwnership = catchAsync(async (req, res, next) => {
         return next(new AppError('Review not found', 404));
     }
 
-        // Only review owner or admin can proceed
-        if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return next(new AppError('You do not have permission to do this', 403));
-        }
+    // Only review owner or admin can proceed
+    if (
+        review.user._id.toString() !== req.user.id &&
+        req.user.role !== 'admin'
+    ) {
+        return next(new AppError('You do not have permission to do this', 403));
+    }
 
     next();
 });
