@@ -1,5 +1,7 @@
 const Review = require('../models/reviewModel');
 const factory = require('./handlerFactory');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
 exports.setProductUserIds = (req, res, next) => {
     // This allowes nested routes to create review on a product
@@ -7,6 +9,21 @@ exports.setProductUserIds = (req, res, next) => {
     if (!req.body.product) req.body.product = req.params.productId;
     next();
 };
+
+exports.checkReviewOwnership = catchAsync(async (req, res, next) => {
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+        return next(new AppError('Review not found', 404));
+    }
+
+        // Only review owner or admin can proceed
+        if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new AppError('You do not have permission to do this', 403));
+        }
+
+    next();
+});
 
 exports.getAllReviews = factory.getAll(Review);
 exports.getReview = factory.getOne(Review);

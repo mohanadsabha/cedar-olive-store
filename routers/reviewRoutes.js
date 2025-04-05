@@ -18,7 +18,10 @@ router
 router
     .route('/:id')
     .get(reviewController.getReview)
-    .patch(reviewController.updateReview) // TODO:FIX: update and delete restrict to the owner user and admins
-    .delete(reviewController.deleteReview);
+    .patch(reviewController.checkReviewOwnership, reviewController.updateReview)
+    .delete(
+        reviewController.checkReviewOwnership,
+        reviewController.deleteReview,
+    );
 
 module.exports = router;
