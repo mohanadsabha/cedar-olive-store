@@ -13,10 +13,6 @@ const reviewSchema = new mongoose.Schema(
             max: 5,
             required: [true, 'Review must have rating from 1 to 5'],
         },
-        createdAt: {
-            type: Date,
-            default: Date.now(),
-        },
         user: {
             type: mongoose.Schema.ObjectId,
             ref: 'User',
@@ -29,6 +25,7 @@ const reviewSchema = new mongoose.Schema(
         },
     },
     {
+        timestamps: true,
         toJSON: { virtuals: true },
         toObject: { virtuals: true },
     },
