@@ -5,10 +5,12 @@ class APIFeatures {
     }
 
     filter() {
+        // eslint-disable-next-line node/no-unsupported-features/es-syntax
         const queryObj = { ...this.queryString };
         const excludedFields = ['page', 'sort', 'limit', 'fields'];
         excludedFields.forEach((el) => delete queryObj[el]);
 
+        // tansform gt gte lt lte in the query to $gt $gte $lt $lte
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(
             /\b(gte|gt|lte|lt)\b/g,
