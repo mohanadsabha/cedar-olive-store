@@ -42,8 +42,8 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     await user.save({ validateBeforeSave: false });
     // Send verification Email
     try {
-        // const verifyURL = `${req.protocol}://${req.get('host')}/verify/${verifyToken}`;
-        const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
+        const verifyURL = `${req.protocol}://${req.get('host')}/verify/${verifyToken}`;
+        // const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
         await new Email(user, verifyURL).sendVerification();
         res.status(200).json({
             status: 'success',
