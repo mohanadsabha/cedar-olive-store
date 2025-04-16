@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const compression = require('compression');
 const AppError = require('./utils/appError');
 const globalEerrorHandler = require('./controllers/errorController');
 const userRouter = require('./routers/userRoutes');
@@ -15,7 +16,7 @@ const reviewRouter = require('./routers/reviewRoutes');
 
 const app = express();
 
-app.set('trust proxy', 1); // Trust the first proxy fro vercel
+app.set('trust proxy', 1);
 
 const limiter = rateLimit({
     max: 100,
@@ -56,9 +57,17 @@ app.use(xss());
 // prevent parameter pollution
 app.use(
     hpp({
-        whitelist: ['brand', 'category'],
+        whitelist: [
+            'brand',
+            'category',
+            'ratingsAverage',
+            'ratingsQuantity',
+            'price',
+        ],
     }),
 );
+
+app.use(compression());
 
 // Routes
 app.use('/api/v1/products', productRouter);
