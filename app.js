@@ -13,6 +13,8 @@ const userRouter = require('./routers/userRoutes');
 const contactRouter = require('./routers/contactRoutes');
 const productRouter = require('./routers/productRoutes');
 const reviewRouter = require('./routers/reviewRoutes');
+const orderController = require('./controllers/orderController');
+const orderRouter = require('./routers/orderRoutes');
 
 const app = express();
 
@@ -46,6 +48,13 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+// Stripe webhook, stripe needs the body as stream
+// app.post(
+//     '/webhook-checkout',
+//     express.raw({ type: 'application/json' }),
+//     orderController.webhookCheckout,
+// );
+
 app.use(express.json({ limit: '10kb' }));
 
 // Data sanitization against NoSQL query injection
@@ -74,6 +83,7 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/contact', contactRouter);
+app.use('/api/v1/orders', orderRouter);
 
 // Unhandled routes
 app.all('*', (req, res, next) => {
