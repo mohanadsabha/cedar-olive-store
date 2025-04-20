@@ -1,17 +1,18 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-// const Product = require('../models/productModel');
 const Order = require('../models/orderModel');
-// const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+const AppError = require('../utils/appError');
+const e = require('express');
 
 exports.createCheckoutSession = catchAsync(async (req, res, next) => {
     const productData = req.body.products;
-    if (!productData || productData.length === 0) {
-        return res
-            .status(400)
-            .json({ status: 'fail', message: 'No products selected' });
-    }
+
+    console.log('Product data from request:', productData);
+
+    if (!productData) return new AppError('No products selected', 400);
+
+    console.log('Product data:', productData);
 
     const taxRate = await stripe.taxRates.create({
         display_name: 'Sales Tax',
@@ -33,13 +34,15 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
     }));
 
     const productMetadata = productData.map((product) => ({
-        _id: product._id,
-        name: product.name, // if not used in the webhook delete
+        product: product.id,
+        name: product.name,
+        quantity: product.quantity || 1,
+        price: product.price,
     }));
 
     const session = await stripe.checkout.sessions.create({
         mode: 'payment',
-        success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.CLIENT_URL}/payment-success`,
         cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
         customer_email: req.user.email,
         line_items: lineItems,
@@ -57,3 +60,42 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
         session,
     });
 });
+
+// const createOrderCheckout = async (session) => {
+//     await Order.create({
+//         user: session.metadata.userId,
+//         orderItems: JSON.parse(session.metadata.products),
+//         totalPrice: session.amount_total / 100,
+//         paymentMethod,
+//         shippingAddress,
+//     });
+// };
+
+exports.webhookCheckout = (req, res, next) => {
+    const signature = req.headers['stripe-signature'];
+
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(
+            req.body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET,
+        );
+    } catch (err) {
+        return new AppError(`Webhook error: ${err.message}`, 400); //try in signatueer
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        // createOrderCheckout(event.data.object);
+        console.log(event.data.object);
+        console.log('Payment was successful!');
+    }
+
+    res.status(200).json({ received: true });
+};
+
+// exports.createOrder = factory.createOne(Order);
+exports.getOrder = factory.getOne(Order);
+exports.getAllOrders = factory.getAll(Order);
+exports.updateOrder = factory.updateOne(Order);
+exports.deleteOrder = factory.deleteOne(Order);

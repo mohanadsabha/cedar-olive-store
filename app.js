@@ -49,11 +49,11 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Stripe webhook, stripe needs the body as stream
-// app.post(
-//     '/webhook-checkout',
-//     express.raw({ type: 'application/json' }),
-//     orderController.webhookCheckout,
-// );
+app.post(
+    '/webhook-checkout',
+    express.raw({ type: 'application/json' }),
+    orderController.webhookCheckout,
+);
 
 app.use(express.json({ limit: '10kb' }));
 
