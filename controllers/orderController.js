@@ -73,8 +73,7 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 });
 
 const createOrderCheckout = catchAsync(async (session) => {
-    console.log('Session:', session);
-    const shipping = session.shipping_details.address;
+    const shipping = session.customer_details.address;
     const paymentMethod = session.payment_method_types[0] || 'unknown';
     await Order.create({
         user: session.metadata.userId,
