@@ -11,7 +11,7 @@ const signToken = (id) =>
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
     const token = signToken(user._id);
     const cookieOptions = {
         expires: new Date(
@@ -19,8 +19,8 @@ const createSendToken = (user, statusCode, res) => {
                 process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
         ),
         httpOnly: true,
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
     };
-    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
     res.cookie('jwt', token, cookieOptions);
 
@@ -42,8 +42,7 @@ const sendVerificationEmail = catchAsync(async (user, req, res, next) => {
     await user.save({ validateBeforeSave: false });
     // Send verification Email
     try {
-        const verifyURL = `${req.protocol}://${req.get('host')}/verify/${verifyToken}`;
-        // const verifyURL = `http://localhost:3000/verify/${verifyToken}`;
+        const verifyURL = `${process.env.CLIENT_URL}/verify/${verifyToken}`;
         await new Email(user, verifyURL).sendVerification();
         res.status(200).json({
             status: 'success',
@@ -123,7 +122,7 @@ exports.login = catchAsync(async (req, res, next) => {
     ) {
         return next(new AppError('Invalid email or password!', 401));
     }
-    createSendToken(user, 200, res);
+    createSendToken(user, 200, req, res);
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
@@ -136,8 +135,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
     // send token in email
     try {
-        // const resetURL = `${req.protocol}://${req.get('host')}/resetPassword/${resetToken}`;
-        const resetURL = `http://localhost:3000/resetPassword/${resetToken}`;
+        const resetURL = `${process.env.CLIENT_URL}/resetPassword/${resetToken}`;
         await new Email(user, resetURL).sendPasswordReset();
         res.status(200).json({
             status: 'success',
@@ -176,7 +174,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save();
     // log the user in, send jwt
-    createSendToken(user, 200, res);
+    createSendToken(user, 200, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -240,5 +238,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     await user.save();
 
     // Kepp user loged in, Send JWT
-    createSendToken(user, 200, res);
+    createSendToken(user, 200, req, res);
 });
