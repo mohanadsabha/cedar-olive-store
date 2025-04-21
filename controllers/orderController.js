@@ -3,16 +3,27 @@ const Order = require('../models/orderModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 const AppError = require('../utils/appError');
-const e = require('express');
 
 exports.createCheckoutSession = catchAsync(async (req, res, next) => {
     const productData = req.body.products;
 
-    console.log('Product data from request:', productData);
+    if (!productData || productData.length === 0) {
+        return next(new AppError('No products selected.', 400));
+    }
 
-    if (!productData) return new AppError('No products selected', 400);
-
-    console.log('Product data:', productData);
+    productData.forEach((product) => {
+        if (!product.name || !product.price || !product.id) {
+            return next(
+                new AppError(
+                    `Invalid product data: ${JSON.stringify(product)}`,
+                    400,
+                ),
+            );
+        }
+        if (!product.quantity) {
+            product.quantity = 1;
+        }
+    });
 
     const taxRate = await stripe.taxRates.create({
         display_name: 'Sales Tax',
@@ -29,14 +40,14 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
             },
             unit_amount: Math.round(product.price * 100),
         },
-        quantity: product.quantity || 1,
+        quantity: product.quantity,
         tax_rates: [taxRate.id],
     }));
 
     const productMetadata = productData.map((product) => ({
         product: product.id,
         name: product.name,
-        quantity: product.quantity || 1,
+        quantity: product.quantity,
         price: product.price,
     }));
 
@@ -50,26 +61,34 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
             userId: req.user.id,
             products: JSON.stringify(productMetadata),
         },
+        billing_address_collection: 'required',
         shipping_address_collection: {
             allowed_countries: ['US', 'CA', 'DE', 'FR', 'AU', 'PS'],
         },
     });
-    // res.json({ url: session.url }); // Send session id or url only
     res.status(200).json({
         status: 'success',
-        session,
+        url: session.url,
     });
 });
 
-// const createOrderCheckout = async (session) => {
-//     await Order.create({
-//         user: session.metadata.userId,
-//         orderItems: JSON.parse(session.metadata.products),
-//         totalPrice: session.amount_total / 100,
-//         paymentMethod,
-//         shippingAddress,
-//     });
-// };
+const createOrderCheckout = async (session) => {
+    const shipping = session.shipping_details.address;
+    const paymentMethod = session.payment_method_types[0] || 'unknown';
+    await Order.create({
+        user: session.metadata.userId,
+        orderItems: JSON.parse(session.metadata.products),
+        totalPrice: session.amount_total / 100,
+        paymentMethod,
+        shippingAddress: {
+            address: `${shipping.line1} - ${shipping.line2}`,
+            city: shipping.city,
+            postalCode: shipping.postal_code,
+            country: shipping.country,
+        },
+        paymentIntentId: session.payment_intent,
+    });
+};
 
 exports.webhookCheckout = (req, res, next) => {
     const signature = req.headers['stripe-signature'];
@@ -82,13 +101,11 @@ exports.webhookCheckout = (req, res, next) => {
             process.env.STRIPE_WEBHOOK_SECRET,
         );
     } catch (err) {
-        return new AppError(`Webhook error: ${err.message}`, 400); //try in signatueer
+        return new AppError(`Webhook error: ${err.message}`, 400);
     }
 
     if (event.type === 'checkout.session.completed') {
-        // createOrderCheckout(event.data.object);
-        console.log(event.data.object);
-        console.log('Payment was successful!');
+        createOrderCheckout(event.data.object);
     }
 
     res.status(200).json({ received: true });
