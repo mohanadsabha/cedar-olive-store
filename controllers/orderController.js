@@ -72,7 +72,7 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
     });
 });
 
-const createOrderCheckout = async (session) => {
+const createOrderCheckout = catchAsync(async (session) => {
     const shipping = session.shipping_details.address;
     const paymentMethod = session.payment_method_types[0] || 'unknown';
     await Order.create({
@@ -88,9 +88,9 @@ const createOrderCheckout = async (session) => {
         },
         paymentIntentId: session.payment_intent,
     });
-};
+});
 
-exports.webhookCheckout = (req, res, next) => {
+exports.webhookCheckout = catchAsync(async (req, res, next) => {
     const signature = req.headers['stripe-signature'];
 
     let event;
@@ -101,15 +101,17 @@ exports.webhookCheckout = (req, res, next) => {
             process.env.STRIPE_WEBHOOK_SECRET,
         );
     } catch (err) {
-        return new AppError(`Webhook error: ${err.message}`, 400);
+        return next(new AppError(`Webhook error: ${err.message}`, 400));
     }
 
     if (event.type === 'checkout.session.completed') {
-        createOrderCheckout(event.data.object);
+        await createOrderCheckout(event.data.object);
     }
 
+    console.log('Webhook event received:', event.type);
+
     res.status(200).json({ received: true });
-};
+});
 
 // exports.createOrder = factory.createOne(Order);
 exports.getOrder = factory.getOne(Order);
