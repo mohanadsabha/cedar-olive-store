@@ -73,6 +73,7 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 });
 
 const createOrderCheckout = catchAsync(async (session) => {
+    console.log('Session:', session);
     const shipping = session.shipping_details.address;
     const paymentMethod = session.payment_method_types[0] || 'unknown';
     await Order.create({
@@ -107,8 +108,6 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
     if (event.type === 'checkout.session.completed') {
         await createOrderCheckout(event.data.object);
     }
-
-    console.log('Webhook event received:', event.type);
 
     res.status(200).json({ received: true });
 });
