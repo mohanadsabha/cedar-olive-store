@@ -23,6 +23,7 @@ const orderSchema = new mongoose.Schema(
                     ref: 'Product',
                     required: [true, 'Order must belong to a product!'],
                 },
+                _id: false,
             },
         ],
         totalPrice: {
