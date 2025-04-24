@@ -111,6 +111,22 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
     res.status(200).json({ received: true });
 });
 
+exports.getMyOrders = catchAsync(async (req, res, next) => {
+    const orders = await Order.find({ user: req.user.id });
+
+    if (!orders || orders.length === 0) {
+        return next(new AppError('No orders found for this user.', 404));
+    }
+
+    res.status(200).json({
+        status: 'success',
+        results: orders.length,
+        data: {
+            orders,
+        },
+    });
+});
+
 // exports.createOrder = factory.createOne(Order);
 exports.getOrder = factory.getOne(Order);
 exports.getAllOrders = factory.getAll(Order);
