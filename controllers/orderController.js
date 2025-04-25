@@ -108,7 +108,10 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
 });
 
 exports.getMyOrders = catchAsync(async (req, res, next) => {
-    const orders = await Order.find({ user: req.user.id });
+    const orders = await Order.find({ user: req.user.id }).populate({
+        path: 'orderItems.product',
+        select: 'images',
+    });
 
     if (!orders || orders.length === 0) {
         return next(new AppError('No orders found for this user.', 404));
@@ -124,7 +127,10 @@ exports.getMyOrders = catchAsync(async (req, res, next) => {
 });
 
 // exports.createOrder = factory.createOne(Order);
-exports.getOrder = factory.getOne(Order);
+exports.getOrder = factory.getOne(Order, {
+    path: 'orderItems.product',
+    select: 'images',
+});
 exports.getAllOrders = factory.getAll(Order);
 exports.updateOrder = factory.updateOne(Order);
 exports.deleteOrder = factory.deleteOne(Order);
