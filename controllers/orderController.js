@@ -11,18 +11,14 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
         return next(new AppError('No products selected.', 400));
     }
 
+    const hasInvalid = productData.some(
+        (product) => !product.name || !product.price || !product.id,
+    );
+    if (hasInvalid) {
+        return next(new AppError('Invalid product data', 400));
+    }
     productData.forEach((product) => {
-        if (!product.name || !product.price || !product.id) {
-            return next(
-                new AppError(
-                    `Invalid product data: ${JSON.stringify(product)}`,
-                    400,
-                ),
-            );
-        }
-        if (!product.quantity) {
-            product.quantity = 1;
-        }
+        if (!product.quantity) product.quantity = 1;
     });
 
     const taxRate = await stripe.taxRates.create({
