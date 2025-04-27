@@ -15,6 +15,14 @@ router.patch('/resetPassword/:token', authContoller.resetPassword);
 router.use(authContoller.protect);
 
 router.get('/me', userController.getMe, userController.getUser);
+router
+    .route('/me/wishlist')
+    .get(userController.getWishlist)
+    .post(userController.addToWishlist);
+router
+    .route('/me/wishlist/:productId')
+    .delete(userController.removeFromWishlist);
+
 router.patch(
     '/updateMe',
     userController.uploadUserImage,

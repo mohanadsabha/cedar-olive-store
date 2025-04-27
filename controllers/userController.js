@@ -83,6 +83,56 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     });
 });
 
+// Whishlist
+exports.getWishlist = catchAsync(async (req, res, next) => {
+    const user = await User.findById(req.user.id).populate('wishlist');
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            wishlist: user.wishlist,
+        },
+    });
+});
+
+exports.addToWishlist = catchAsync(async (req, res, next) => {
+    const { productId } = req.body;
+
+    if (!productId) {
+        return next(new AppError('Please provide a productId', 400));
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { $addToSet: { wishlist: productId } },
+        { new: true },
+    );
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            wishlist: user.wishlist,
+        },
+    });
+});
+
+exports.removeFromWishlist = catchAsync(async (req, res, next) => {
+    const { productId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { $pull: { wishlist: productId } },
+        { new: true },
+    ).populate('wishlist');
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            wishlist: user.wishlist,
+        },
+    });
+});
+
 // Admin
 exports.createUser = (req, res) => {
     res.status(500).json({
