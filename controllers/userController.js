@@ -133,7 +133,7 @@ exports.removeFromWishlist = catchAsync(async (req, res, next) => {
 exports.createUser = (req, res) => {
     res.status(500).json({
         status: 'fail',
-        message: 'This route in not defined! Please use /signup instead',
+        message: 'This route in not defined. Please use /signup instead',
     });
 };
 exports.getAllUsers = factory.getAll(User);
