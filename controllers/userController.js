@@ -119,17 +119,13 @@ exports.addToWishlist = catchAsync(async (req, res, next) => {
 exports.removeFromWishlist = catchAsync(async (req, res, next) => {
     const { productId } = req.params;
 
-    const user = await User.findByIdAndUpdate(
-        req.user.id,
-        { $pull: { wishlist: productId } },
-        { new: true },
-    ).populate('wishlist');
+    await User.findByIdAndUpdate(req.user.id, {
+        $pull: { wishlist: productId },
+    });
 
-    res.status(200).json({
+    res.status(204).json({
         status: 'success',
-        data: {
-            wishlist: user.wishlist,
-        },
+        data: null,
     });
 });
 
