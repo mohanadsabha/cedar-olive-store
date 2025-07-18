@@ -1,41 +1,103 @@
 
-# 🛒 CedarOlive Store – Backend
+# ⚙️ Admin Dashboard
 
-This is the backend for the CedarOlive Store project, responsible for handling APIs, authentication, product management, and database interactions.
+A modern, responsive admin dashboard template built with web technologies, designed for managing user data, analytics, and content.
 
-## 🌐 Live Frontend
+---
 
-[Visit CedarOlive Store](https://cedar-olive-store.vercel.app/)
+## 🚀 Features
 
-## ⚙️ Tech Stack
+- 📊 Interactive charts & graphs
+- 🗄 Customizable data tables with search, sort, and pagination
+- 🔒 User authentication & role-based access control
+- 🎨 Theme support (light/dark modes)
+- 🔧 Modular components for easy customization
+- 🔄 Responsive design for desktop, tablet, and mobile
 
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT
-- Multer
+---
 
-## 🗂️ Features
+## 🛠️ Technologies Used
 
-- User registration & authentication
-- Product CRUD
-- Image upload
-- Category management
-- Order handling
+- **Front-end**: React v18, [Bootstrap](https://getbootstrap.com/)
+- **Authentication**: Token based with JWT
+- **Database**: Firebase
+
+---
+
+## 📁 Repository Structure
+
+```
+admin-dashboard/
+├── public/
+│   └── img/
+├── src/       
+│   ├── components/
+│   ├── pages/
+│   ├── layouts/
+│   ├── redux/
+│   ├── config/
+│   └── index.js
+├── package.json 
+└── README.md
+```
+
+---
 
 ## 🚀 Getting Started
 
-1. Clone the repo
-2. Configure `.env`
-3. Install dependencies
-4. Run the server
+### 1. Clone the repo
 
-## 🔗 Frontend
+```bash
+git clone https://github.com/mohanadsabha/admin-dashboard.git
+cd admin-dashboard
+```
 
-See the [Frontend Repository](https://github.com/Hussein-shsx3/CedarOlive-Store)
+### 2. Install dependencies
 
-## 👤 Author (Backend)
+- **Node.js**:
+  ```bash
+  npm install
+  ```
 
-**MOHANAD M. ABUSABHA**
-- GitHub: [mohanadsabha](https://github.com/mohanadsabha)
+### 3. Run the application
+
+  ```bash
+  npm run start
+  ```
+
+Access the dashboard at `http://localhost:3000/`.
+
+---
+
+## ✅ Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. 🌱 Fork the repo  
+2. 📥 Create a branch:
+   ```bash
+   git checkout -b feature/awesome-feature
+   ```
+3. 💡 Commit your changes:
+   ```bash
+   git commit -m "Add awesome feature"
+   ```
+4. 🔼 Push to your branch:
+   ```bash
+   git push origin feature/awesome-feature
+   ```
+5. 🔁 Open a Pull Request
+
+---
+
+## ✍️ Author
+
+**Mohanad Sabha**  
+- GitHub: [mohanadsabha](https://github.com/mohanadsabha)  
+- LinkedIn: [in/mohanadsabha](https://www.linkedin.com/in/mohanadsabha)
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**
