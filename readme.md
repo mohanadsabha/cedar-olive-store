@@ -13,6 +13,7 @@ This is the backend for the CedarOlive Store project, responsible for handling A
 - Express.js
 - MongoDB
 - Mongoose
+- Redis
 - JWT
 - Multer
 
@@ -23,6 +24,7 @@ This is the backend for the CedarOlive Store project, responsible for handling A
 - Image upload
 - Category management
 - Order handling
+- Application Caching for Products
 
 ## 🚀 Getting Started
 
