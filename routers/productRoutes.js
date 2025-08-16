@@ -17,6 +17,7 @@ router.post(
     '/',
     productController.uploadProductImages,
     productController.resizeProductImages,
+    productController.invalidateProductCache,
     productController.addProduct,
 );
 router
@@ -24,8 +25,12 @@ router
     .patch(
         productController.uploadProductImages,
         productController.resizeProductImages,
+        productController.invalidateProductCache,
         productController.updateProduct,
     )
-    .delete(productController.deleteProduct);
+    .delete(
+        productController.invalidateProductCache,
+        productController.deleteProduct,
+    );
 
 module.exports = router;
