@@ -12,15 +12,21 @@ router
     .post(
         authController.restrictTo('user'),
         reviewController.setProductUserIds,
+        reviewController.invalidateProductCacheOnReview,
         reviewController.createReview,
     );
 
 router
     .route('/:id')
     .get(reviewController.getReview)
-    .patch(reviewController.checkReviewOwnership, reviewController.updateReview)
+    .patch(
+        reviewController.checkReviewOwnership,
+        reviewController.invalidateProductCacheOnReview,
+        reviewController.updateReview,
+    )
     .delete(
         reviewController.checkReviewOwnership,
+        reviewController.invalidateProductCacheOnReview,
         reviewController.deleteReview,
     );
 
