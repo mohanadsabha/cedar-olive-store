@@ -33,19 +33,9 @@ class CacheManager {
 
     async get(key) {
         try {
-            const startTime = Date.now();
             const cachedData = await redisClient.get(key);
-            const duration = Date.now() - startTime;
-
-            if (process.env.NODE_ENV === 'development') {
-                console.log(
-                    `Cache GET [${cachedData ? 'HIT' : 'MISS'}]: ${key} (${duration}ms)`,
-                );
-            }
-
             return cachedData ? JSON.parse(cachedData) : null;
         } catch (error) {
-            console.error(`Cache GET error for key ${key}:`, error);
             return null;
         }
     }
@@ -55,7 +45,6 @@ class CacheManager {
             await redisClient.setEx(key, ttl, JSON.stringify(data));
             return true;
         } catch (error) {
-            console.error(`Cache SET error for key ${key}:`, error);
             return false;
         }
     }
@@ -65,27 +54,54 @@ class CacheManager {
             const result = await redisClient.del(key);
             return result > 0;
         } catch (error) {
-            console.error(`Cache DELETE error for key ${key}:`, error);
             return false;
         }
     }
 
     // Delete cache entries by pattern
-    async delPattern(pattern) {
-        try {
-            const keys = await redisClient.keys(pattern);
-            if (keys.length > 0) {
-                await redisClient.del(keys);
-                return keys.length;
+    async delPattern(pattern, { batchSize = 1000, useUnlink = true } = {}) {
+        let total = 0;
+        const size =
+            Number.isInteger(batchSize) && batchSize > 0 ? batchSize : 1000;
+
+        const pipeline = redisClient.multi();
+        let batch = [];
+
+        /**
+         * REFACTOR THE LOOP LATER
+         */
+        for await (const key of redisClient.scanIterator({
+            MATCH: pattern,
+            COUNT: size,
+        })) {
+            batch.push(String(key));
+
+            if (batch.length >= size) {
+                if (batch.length > 0) {
+                    if (useUnlink && typeof pipeline.unlink === 'function') {
+                        pipeline.unlink(...batch);
+                    } else {
+                        pipeline.del(...batch);
+                    }
+                    total += batch.length;
+                    batch = [];
+                }
             }
-            return 0;
-        } catch (error) {
-            console.error(
-                `Cache DELETE PATTERN error for pattern ${pattern}:`,
-                error,
-            );
-            return 0;
         }
+
+        if (batch.length > 0) {
+            if (useUnlink && typeof pipeline.unlink === 'function') {
+                pipeline.unlink(...batch);
+            } else {
+                pipeline.del(...batch);
+            }
+            total += batch.length;
+        }
+
+        if (total > 0) {
+            await pipeline.exec();
+        }
+        return total;
     }
 
     async getStats() {
@@ -98,7 +114,6 @@ class CacheManager {
                 isConnected: redisClient.isReady,
             };
         } catch (error) {
-            console.error('Error getting cache stats:', error);
             return null;
         }
     }
