@@ -36,15 +36,12 @@ exports.resizeProductImages = catchAsync(async (req, res, next) => {
     next();
 });
 
-/**
- * TODO: FIX DELETING PRODUCTS LIST CACHE & TEST FOR REVIEWS INVALIDATION
- */
 exports.invalidateProductCache = catchAsync(async (req, res, next) => {
     if (req.params.id) {
         const key = cache.generateKey('product', req.params.id);
         await cache.del(key);
     }
-    await cache.delPattern('products:*');
+    await cache.delPattern('products*');
     next();
 });
 

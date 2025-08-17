@@ -17,7 +17,7 @@ exports.invalidateProductCacheOnReview = catchAsync(async (req, res, next) => {
         : req.params.id;
     const key = cache.generateKey('product', productId);
     await cache.del(key);
-    await cache.delPattern('products:*');
+    await cache.delPattern('products*');
     next();
 });
 
