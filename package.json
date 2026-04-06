@@ -4,8 +4,9 @@
     "description": "Web Store for training",
     "main": "server.js",
     "scripts": {
+        "start": "node server.js",
         "start:dev": "cross-env NODE_ENV=development nodemon server.js",
-        "start:prod": "cross-env NODE_ENV=production nodemon server.js",
+        "start:prod": "cross-env NODE_ENV=production node server.js",
         "debug": "ndb server.js"
     },
     "author": "Mohanad Abu Sabha",

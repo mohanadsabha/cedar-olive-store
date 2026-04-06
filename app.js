@@ -20,6 +20,14 @@ const app = express();
 
 app.set('trust proxy', 1);
 
+app.get(['/', '/api/v1/health', '/api/v1/wakeup'], (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'Server is awake',
+        timestamp: new Date().toISOString(),
+    });
+});
+
 const limiter = rateLimit({
     max: 100,
     windowMs: 60 * 60 * 1000,
